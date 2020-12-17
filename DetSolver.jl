@@ -329,12 +329,12 @@ function DixonPolyDetGF(A::Generic.Mat{gfp_poly}, B::Generic.Mat{gfp_poly}, U::A
 @show  p = NextIrreducible(rand_pol(K,U),U)
 #  p = rand_irreducible_pol(K, U)
   DB = 2*DetBound(A)
-  d= degree(p)  
-  Ap=mod_poly(A,p)
+  d = degree(p)  
+  Ap = mod_poly(A,p)
 println("Inv")
-@time IA=inv(Ap)
+@time IA = inv(Ap)
 println("lifting")
-@time  ap=lift_mat(IA,K,d)
+@time  ap = lift_mat(IA,K,d)
   sol = 0*B
   D = B
   pp = K(1)
