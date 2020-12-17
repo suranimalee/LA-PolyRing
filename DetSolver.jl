@@ -445,8 +445,8 @@ julia> AA*S==BB
 
 
 
-For determinant computation, lock the solver line 357
-                             on the common denominator computation, line 356
+For determinant computation, lock the solver (SolveReconPoly(sol,pp)): line 357  #
+                             unlock the common denominator computation (DenomMidPoly(sol,pp)): line 356
 
 
 @time DeterminantGF(A,5:8, 10:15);
