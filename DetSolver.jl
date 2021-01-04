@@ -43,7 +43,7 @@ function rand_pol(P::PolyRing{T},U::AbstractArray) where T
   for i=1:d
      setcoeff!(a, d-i, rand(R))
   end
-  setcoeff!(a, d, R(1))  
+  setcoeff!(a, 0, R(1))  
   return a
 end
 
@@ -315,6 +315,91 @@ end
 
 
 
+###############################################################
+#
+#           Reconstruction without Common Denominator
+#
+##############################################################
+
+function rational_reconstruction_poly_mat(A::Generic.Mat{gfp_poly}, M::gfp_poly)
+F = FractionField(base_ring(A))
+r = nrows(A)
+c = ncols(A)
+B = zero_matrix(F,r,c)
+
+  for i = 1:r
+    for j = 1:c
+     fl = true
+     n,d = HalfGCDReconFast(A[i,j],M)
+#    fl, n,d = rational_reconstruction(A[i,j], M)
+      B[i,j] = n//d
+      if !fl 
+        return false, B
+      end
+    end
+  end
+  return true, B
+end
+
+
+
+function HalfGCDReconFast(r1::PolyElem{T}, r0::PolyElem{T}) where T
+  P = r1.parent
+  k = degree(r0)
+  n1 = degree(r1) 
+  
+  if r1==0 
+     return r1,P(1)
+  end
+ 
+  if k==0 && (k-n1)==0
+     q = inv(lead(r1))*lead(r0)
+     return r0-q*r1, -q
+  end
+
+  d = numerator(ceil(k//2))
+  s = 0
+  r = quot(r0,2*d-2)
+  rr= quot(r1,2*d-2-(k-n1))
+  q = P()
+  re = P()
+
+  
+  M11 = P(1)
+  M12 = P(0)
+  M21 = P(0)
+  M22 = P(1)
+
+  while s <= d-1 && rr != P(0)
+
+    q,re =  divrem(r,rr)
+    s +=degree(q)
+
+    if s <= (d-1) 
+
+      MM = M21
+      M21 = mul_sub_Two(M11, q, M21, r)
+      M11 = MM
+      MM = M22
+      M22 = mul_sub_Two(M12, q, M22, q)
+      M12 = MM
+    end  
+
+  r, rr, re = rr, re, r 
+  q = P(0)
+  re = P(0)      
+
+  end
+
+  n = M21*r0+M22*r1
+  return n, M22 
+end
+
+
+
+
+
+
 ##############################################################################
 #
 #               Dixon Solver
@@ -329,12 +414,12 @@ function DixonPolyDetGF(A::Generic.Mat{gfp_poly}, B::Generic.Mat{gfp_poly}, U::A
 @show  p = NextIrreducible(rand_pol(K,U),U)
 #  p = rand_irreducible_pol(K, U)
   DB = 2*DetBound(A)
-  d = degree(p)  
-  Ap = mod_poly(A,p)
+  d= degree(p)  
+  Ap=mod_poly(A,p)
 println("Inv")
-@time IA = inv(Ap)
+@time IA=inv(Ap)
 println("lifting")
-@time  ap = lift_mat(IA,K,d)
+@time  ap=lift_mat(IA,K,d)
   sol = 0*B
   D = B
   pp = K(1)
@@ -440,13 +525,13 @@ julia> AA=matrix(FractionField(base_ring(A)),nrows(A), ncols(A),array_mat(A));
 
 julia> bb=matrix(FractionField(base_ring(b)),nrows(b), ncols(b),array_mat(b));
 
-julia> AA*S==bb
+julia> AA*S==BB
 
 
 
 
-For determinant computation, lock the solver (SolveReconPoly(sol,pp)): line 357  #
-                             unlock the common denominator computation (DenomMidPoly(sol,pp)): line 356
+For determinant computation, lock the solver line 357
+                             on the common denominator computation, line 356
 
 
 @time DeterminantGF(A,5:8, 10:15);
