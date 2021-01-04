@@ -275,7 +275,7 @@ function DenomMidPoly(A::Generic.Mat{gfp_poly}, p::gfp_poly)
   i = 2
   while true
     v2 = HalfGCDDen(A[i,1]*y,p)
-    if v2 == 1 || v2 == -1
+    if isunit(v2)  #v2 == 1 || v2 == -1
        return y
     else 
        if i == r
