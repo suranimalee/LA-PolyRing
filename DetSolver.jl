@@ -43,7 +43,7 @@ function rand_pol(P::PolyRing{T},U::AbstractArray) where T
   for i=1:d
      setcoeff!(a, d-i, rand(R))
   end
-  setcoeff!(a, 0, R(1))  
+  setcoeff!(a, d, R(1))  
   return a
 end
 
@@ -525,7 +525,7 @@ julia> AA=matrix(FractionField(base_ring(A)),nrows(A), ncols(A),array_mat(A));
 
 julia> bb=matrix(FractionField(base_ring(b)),nrows(b), ncols(b),array_mat(b));
 
-julia> AA*S==BB
+julia> AA*S==bb
 
 
 
